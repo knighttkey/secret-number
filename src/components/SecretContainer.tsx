@@ -44,10 +44,12 @@ export default (props: Props) => {
     "Z",
   ];
 
-  if (/Line/.test(navigator.userAgent)) {
-    window.location.href = window.location.href + "?openExternalBrowser=1";
-  }
-  
+  useEffect(()=>{
+    if (/Line/.test(navigator.userAgent)) {
+      window.location.href = window.location.href + "?openExternalBrowser=1";
+    }
+  },[])
+
   useEffect(() => {
     if (!originRef.current) return;
     encode(originRef.current.value);
