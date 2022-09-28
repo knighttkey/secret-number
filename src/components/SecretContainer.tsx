@@ -125,14 +125,15 @@ export default (props: Props) => {
     });
     setDecodeString(decodedArray.join(""));
   };
-  async function CheckPermission(){
-    const readPerm = await navigator.permissions.query({name: 'clipboard-read', allowWithoutGesture: false });
-    
-    const writePerm = await navigator.permissions.query({name: 'clipboard-write', allowWithoutGesture: false });
-    
-    // Will be 'granted', 'denied' or 'prompt':
-    alert('Read: '+readPerm.state+'\nWrite: '+writePerm.state);
-  }
+  // const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
+  // const permissionStatus = await navigator.permissions.query(queryOpts);
+  // // Will be 'granted', 'denied' or 'prompt':
+  // console.log(permissionStatus.state);
+  
+  // // Listen for changes to the permission state
+  // permissionStatus.onchange = () => {
+  //   console.log(permissionStatus.state);
+  // };
   const copySecret = async () => {
     let ele = document.querySelector(".result_string");
     // ele.focus();
@@ -179,7 +180,7 @@ export default (props: Props) => {
           <div className="result_string" ref={encodeResultRef}>
             {encodeString}
           </div>
-          <button onClick={CheckPermission}>ddd</button>
+          {/* <button onClick={CheckPermission}>ddd</button> */}
           <div
             className={`copy_btn ${encodeString ? "" : "disable"} `}
             onClick={() => copySecret()}
