@@ -1,10 +1,7 @@
 import React, {
-  DragEvent,
   useRef,
   useState,
-  MouseEvent,
   useEffect,
-  ChangeEvent,
 } from "react";
 import "./../styles/SecretContainer.scss";
 
@@ -14,12 +11,15 @@ export default (props: Props) => {
   const {} = props;
   const originRef = useRef<HTMLInputElement>(null);
   const decodeRef = useRef<HTMLInputElement>(null);
+  const encodeResultRef = useRef<HTMLInputElement>(null);
+  const decodeResultRef = useRef<HTMLInputElement>(null);
   const [encodeString, setEncodeString] = useState<string>("");
   const [decodeString, setDecodeString] = useState<string>("");
   const [secretNumber, setSecretNumber] = useState<number>(1);
   const [decodeNumber, setDecodeNumber] = useState<number>(1);
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const alphabet = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const alphabetArray = [
+    " ",
     "A",
     "B",
     "C",
@@ -48,6 +48,16 @@ export default (props: Props) => {
     "Z",
   ];
 
+  useEffect(() => {
+    if (!originRef.current) return;
+    encode(originRef.current.value);
+  }, [secretNumber]);
+
+  useEffect(() => {
+    if (!decodeRef.current) return;
+    decode(decodeRef.current.value);
+  }, [decodeNumber]);
+
   const isUpperCase = (str: string) => {
     return str != str.toLowerCase() && str === str.toUpperCase();
   };
@@ -58,101 +68,135 @@ export default (props: Props) => {
       let upper = isUpperCase(item);
       let originIndex = alphabet.indexOf(item.toUpperCase());
       let additionNumber;
-      if (originIndex + secretNumber < 26) {
-        additionNumber = originIndex + secretNumber;
+      let indexCount = originIndex + secretNumber;
+      if (originIndex <= 0) {
+        additionNumber = 0;
       } else {
-        additionNumber = originIndex + secretNumber - 26;
+        if (indexCount <= 26) {
+          additionNumber = indexCount;
+        } else {
+          let scale = Math.round(indexCount / 26);
+          let mod = indexCount % 26;
+          additionNumber = indexCount - 26;
+        }
       }
-      if (additionNumber < 0) return;
-      console.log('additionNumber', additionNumber)
+
       let result;
-      if (upper) {
-        result = alphabetArray[additionNumber];
+      if (additionNumber <= 0) {
+        result = item;
       } else {
-        result = alphabetArray[additionNumber].toLowerCase();
+        if (upper) {
+          result = alphabetArray[additionNumber];
+        } else {
+          result = alphabetArray[additionNumber].toLowerCase();
+        }
       }
-      return originIndex === -1 ? item : result;
+      return result;
     });
     setEncodeString(replacedArray.join(""));
   };
-  const changeSecretNumber = (evt:ChangeEvent) => {
-    let secretNo = (evt.target as HTMLInputElement).value;
-    setSecretNumber(Number(secretNo))
-    if(!originRef.current) return;
-    encode(originRef.current.value)
 
-  }
-  const changeDecodeNumber = (evt:ChangeEvent) => {
-    let decodeNo = (evt.target as HTMLInputElement).value;
-    setDecodeNumber(Number(decodeNo))
-    if(!decodeRef.current) return;
-    decode(decodeRef.current.value)
-  }
-
-  const decode = (evtStr:string) => {
+  const decode = (evtStr: string) => {
     let instantSecretString = evtStr;
     let instantSecretArray = instantSecretString.split("");
-    let decodedArray = instantSecretArray.map((item)=>{
-      console.log('item', item)
+    let decodedArray = instantSecretArray.map((item) => {
       let upper = isUpperCase(item);
       let originIndex = alphabet.indexOf(item.toUpperCase());
       let additionNumber;
-      if (originIndex - decodeNumber >= 0) {
-        additionNumber = originIndex - decodeNumber;
+      let indexCount = originIndex - decodeNumber;
+      if (originIndex <= 0) {
+        additionNumber = 0;
       } else {
-        additionNumber = 26 + originIndex - decodeNumber;
+        if (indexCount >= 0) {
+          additionNumber = indexCount;
+        } else {
+          let scale = Math.round(indexCount / 26);
+          let mod = indexCount % 26;
+          additionNumber = 26 + indexCount;
+        }
       }
-      if (additionNumber < 0) return;
       let result;
-      if (upper) {
-        result = alphabetArray[additionNumber];
+      if (additionNumber <= 0) {
+        result = item;
       } else {
-        result = alphabetArray[additionNumber].toLowerCase();
+        if (upper) {
+          result = alphabetArray[additionNumber];
+        } else {
+          result = alphabetArray[additionNumber].toLowerCase();
+        }
       }
-      return originIndex === -1 ? item : result;
-    })
+      return result;
+    });
     setDecodeString(decodedArray.join(""));
-  }
+  };
+
+  const copySecret = () => {
+    if (!encodeResultRef.current) return;
+    navigator.clipboard.writeText(encodeResultRef.current.innerText);
+  };
+  const copyResult = () => {
+    if (!decodeResultRef.current) return;
+    navigator.clipboard.writeText(decodeResultRef.current.innerText);
+  };
+
   return (
     <div className="secret_container">
       <div className="encode_area">
-      <div className="title">Encode</div>
-        <input
-          className="secret_number"
-          type="number"
-          value={secretNumber}
-          onChange={(evt) => changeSecretNumber(evt)}
-          min={1}
-          max={26}
-          step={1}
-        ></input>
-        <input
-          className="origin_string"
-          type="text"
-          onChange={(evt) => encode(evt.target.value)}
-          ref={originRef}
-        ></input>
-        <div className="result_string">{encodeString}</div>
-        
+        <div className="title">Encode</div>
+        <div className="top_row">
+          <input
+            className="secret_number"
+            type="number"
+            value={secretNumber}
+            // onChange={(evt) => changeSecretNumber(evt)}
+            onChange={(evt) => setSecretNumber(Number(evt.target.value))}
+            min={1}
+            max={26}
+            step={1}
+          ></input>
+          <input
+            className="origin_string"
+            type="text"
+            onChange={(evt) => encode(evt.target.value)}
+            ref={originRef}
+            spellCheck={false}
+          ></input>
+        </div>
+        <div className="bottom_row">
+          <div className="result_string" ref={encodeResultRef}>
+            {encodeString}
+          </div>
+          <div className={`copy_btn ${encodeString ? '':'disable'} `} onClick={() => copySecret()}>
+            <div className="icon"></div>
+          </div>
+        </div>
       </div>
       <div className="decode_area">
-      <div className="title">Decode</div>
-      <input
+        <div className="title">Decode</div>
+        <div className="top_row">
+        <input
           className="decode_number"
           type="number"
           value={decodeNumber}
-          onChange={(evt) => changeDecodeNumber(evt)}
+          onChange={(evt) => setDecodeNumber(Number(evt.target.value))}
           min={1}
-          max={26}
+          max={25}
           step={1}
         ></input>
-      <input
+        <input
           className="secret_string"
           type="text"
           onChange={(evt) => decode(evt.target.value)}
           ref={decodeRef}
+          spellCheck={false}
         ></input>
-        <div className="decode_result_string">{decodeString}</div>
+        </div>
+        <div className="bottom_row">
+        <div className="decode_result_string" ref={decodeResultRef}>{decodeString}</div>
+        <div className={`copy_btn ${decodeString ? '':'disable'} `} onClick={() => copyResult()}>
+            <div className="icon"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
