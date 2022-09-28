@@ -1,8 +1,4 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-} from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./../styles/SecretContainer.scss";
 
 type Props = {};
@@ -129,16 +125,34 @@ export default (props: Props) => {
     });
     setDecodeString(decodedArray.join(""));
   };
+  async function CheckPermission(){
+    const readPerm = await navigator.permissions.query({name: 'clipboard-read', allowWithoutGesture: false });
+    
+    const writePerm = await navigator.permissions.query({name: 'clipboard-write', allowWithoutGesture: false });
+    
+    // Will be 'granted', 'denied' or 'prompt':
+    alert('Read: '+readPerm.state+'\nWrite: '+writePerm.state);
+  }
+  const copySecret = async () => {
+    let ele = document.querySelector(".result_string");
+    // ele.focus();
+    if (!ele) return;
+    
+    await navigator.clipboard.writeText(ele.innerHTML).then(() => {
+      alert("successfully copied");
 
-  const copySecret = () => {
-    if (!encodeResultRef.current) return;
-    navigator.clipboard.writeText(encodeResultRef.current.innerText);
+    })
+    .catch((e) => {
+      console.log('e',e)
+      alert("something went wrong");
+    });
   };
   const copyResult = () => {
-    if (!decodeResultRef.current) return;
-    navigator.clipboard.writeText(decodeResultRef.current.innerText);
+    let ele = document.querySelector(".decode_result_string");
+    if (!ele) return;
+    alert("copy successful");
+    navigator.clipboard.writeText(ele.innerHTML);
   };
-
   return (
     <div className="secret_container">
       <div className="encode_area">
@@ -148,7 +162,6 @@ export default (props: Props) => {
             className="secret_number"
             type="number"
             value={secretNumber}
-            // onChange={(evt) => changeSecretNumber(evt)}
             onChange={(evt) => setSecretNumber(Number(evt.target.value))}
             min={1}
             max={26}
@@ -166,7 +179,11 @@ export default (props: Props) => {
           <div className="result_string" ref={encodeResultRef}>
             {encodeString}
           </div>
-          <div className={`copy_btn ${encodeString ? '':'disable'} `} onClick={() => copySecret()}>
+          <button onClick={CheckPermission}>ddd</button>
+          <div
+            className={`copy_btn ${encodeString ? "" : "disable"} `}
+            onClick={() => copySecret()}
+          >
             <div className="icon"></div>
           </div>
         </div>
@@ -174,26 +191,31 @@ export default (props: Props) => {
       <div className="decode_area">
         <div className="title">Decode</div>
         <div className="top_row">
-        <input
-          className="decode_number"
-          type="number"
-          value={decodeNumber}
-          onChange={(evt) => setDecodeNumber(Number(evt.target.value))}
-          min={1}
-          max={25}
-          step={1}
-        ></input>
-        <input
-          className="secret_string"
-          type="text"
-          onChange={(evt) => decode(evt.target.value)}
-          ref={decodeRef}
-          spellCheck={false}
-        ></input>
+          <input
+            className="decode_number"
+            type="number"
+            value={decodeNumber}
+            onChange={(evt) => setDecodeNumber(Number(evt.target.value))}
+            min={1}
+            max={25}
+            step={1}
+          ></input>
+          <input
+            className="secret_string"
+            type="text"
+            onChange={(evt) => decode(evt.target.value)}
+            ref={decodeRef}
+            spellCheck={false}
+          ></input>
         </div>
         <div className="bottom_row">
-        <div className="decode_result_string" ref={decodeResultRef}>{decodeString}</div>
-        <div className={`copy_btn ${decodeString ? '':'disable'} `} onClick={() => copyResult()}>
+          <div className="decode_result_string" ref={decodeResultRef}>
+            {decodeString}
+          </div>
+          <div
+            className={`copy_btn ${decodeString ? "" : "disable"} `}
+            onClick={() => copyResult()}
+          >
             <div className="icon"></div>
           </div>
         </div>
