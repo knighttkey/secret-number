@@ -6,13 +6,13 @@ type Props = {};
 export default (props: Props) => {
   const {} = props;
   const originRef = useRef<HTMLInputElement>(null);
-  const decodeRef = useRef<HTMLInputElement>(null);
-  const encodeResultRef = useRef<HTMLInputElement>(null);
-  const decodeResultRef = useRef<HTMLInputElement>(null);
-  const [encodeString, setEncodeString] = useState<string>("");
-  const [decodeString, setDecodeString] = useState<string>("");
+  const decryptRef = useRef<HTMLInputElement>(null);
+  const encryptResultRef = useRef<HTMLInputElement>(null);
+  const decryptResultRef = useRef<HTMLInputElement>(null);
+  const [encryptString, setEncryptString] = useState<string>("");
+  const [decryptString, setDecryptString] = useState<string>("");
   const [secretNumber, setSecretNumber] = useState<number>(1);
-  const [decodeNumber, setDecodeNumber] = useState<number>(1);
+  const [decryptNumber, setDecryptNumber] = useState<number>(1);
   const alphabet = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const alphabetArray = [
     " ",
@@ -47,23 +47,23 @@ export default (props: Props) => {
   useEffect(()=>{
     if (/Line/.test(navigator.userAgent)) {
       window.location.href = window.location.href + "?openExternalBrowser=1";
-    }
+    } 
   },[])
 
   useEffect(() => {
     if (!originRef.current) return;
-    encode(originRef.current.value);
+    encrypt(originRef.current.value);
   }, [secretNumber]);
 
   useEffect(() => {
-    if (!decodeRef.current) return;
-    decode(decodeRef.current.value);
-  }, [decodeNumber]);
+    if (!decryptRef.current) return;
+    decrypt(decryptRef.current.value);
+  }, [decryptNumber]);
 
   const isUpperCase = (str: string) => {
     return str != str.toLowerCase() && str === str.toUpperCase();
   };
-  const encode = (evtStr: string) => {
+  const encrypt = (evtStr: string) => {
     let instantString = evtStr;
     let instantArray = instantString.split("");
     let replacedArray = instantArray.map((item) => {
@@ -95,17 +95,17 @@ export default (props: Props) => {
       }
       return result;
     });
-    setEncodeString(replacedArray.join(""));
+    setEncryptString(replacedArray.join(""));
   };
 
-  const decode = (evtStr: string) => {
+  const decrypt = (evtStr: string) => {
     let instantSecretString = evtStr;
     let instantSecretArray = instantSecretString.split("");
-    let decodedArray = instantSecretArray.map((item) => {
+    let decryptdArray = instantSecretArray.map((item) => {
       let upper = isUpperCase(item);
       let originIndex = alphabet.indexOf(item.toUpperCase());
       let additionNumber;
-      let indexCount = originIndex - decodeNumber;
+      let indexCount = originIndex - decryptNumber;
       if (originIndex <= 0) {
         additionNumber = 0;
       } else {
@@ -129,7 +129,7 @@ export default (props: Props) => {
       }
       return result;
     });
-    setDecodeString(decodedArray.join(""));
+    setDecryptString(decryptdArray.join(""));
   };
   // const queryOpts = { name: 'clipboard-read', allowWithoutGesture: false };
   // const permissionStatus = await navigator.permissions.query(queryOpts);
@@ -155,15 +155,15 @@ export default (props: Props) => {
     });
   };
   const copyResult = () => {
-    let ele = document.querySelector(".decode_result_string");
+    let ele = document.querySelector(".decrypt_result_string");
     if (!ele) return;
     alert("copy successful");
     navigator.clipboard.writeText(ele.innerHTML);
   };
   return (
     <div className="secret_container">
-      <div className="encode_area">
-        <div className="title">Encode</div>
+      <div className="encrypt_area">
+        <div className="title">Encrypt</div>
         <div className="top_row">
           <input
             className="secret_number"
@@ -177,32 +177,32 @@ export default (props: Props) => {
           <input
             className="origin_string"
             type="text"
-            onChange={(evt) => encode(evt.target.value)}
+            onChange={(evt) => encrypt(evt.target.value)}
             ref={originRef}
             spellCheck={false}
           ></input>
         </div>
         <div className="bottom_row">
-          <div className="result_string" ref={encodeResultRef}>
-            {encodeString}
+          <div className="result_string" ref={encryptResultRef}>
+            {encryptString}
           </div>
           {/* <button onClick={CheckPermission}>ddd</button> */}
           <div
-            className={`copy_btn ${encodeString ? "" : "disable"} `}
+            className={`copy_btn ${encryptString ? "" : "disable"} `}
             onClick={() => copySecret()}
           >
             <div className="icon"></div>
           </div>
         </div>
       </div>
-      <div className="decode_area">
-        <div className="title">Decode</div>
+      <div className="decrypt_area">
+        <div className="title">Decrypt</div>
         <div className="top_row">
           <input
-            className="decode_number"
+            className="decrypt_number"
             type="number"
-            value={decodeNumber}
-            onChange={(evt) => setDecodeNumber(Number(evt.target.value))}
+            value={decryptNumber}
+            onChange={(evt) => setDecryptNumber(Number(evt.target.value))}
             min={1}
             max={25}
             step={1}
@@ -210,17 +210,17 @@ export default (props: Props) => {
           <input
             className="secret_string"
             type="text"
-            onChange={(evt) => decode(evt.target.value)}
-            ref={decodeRef}
+            onChange={(evt) => decrypt(evt.target.value)}
+            ref={decryptRef}
             spellCheck={false}
           ></input>
         </div>
         <div className="bottom_row">
-          <div className="decode_result_string" ref={decodeResultRef}>
-            {decodeString}
+          <div className="decrypt_result_string" ref={decryptResultRef}>
+            {decryptString}
           </div>
           <div
-            className={`copy_btn ${decodeString ? "" : "disable"} `}
+            className={`copy_btn ${decryptString ? "" : "disable"} `}
             onClick={() => copyResult()}
           >
             <div className="icon"></div>
